@@ -1,0 +1,1311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Web Flasher</title>
+<style>
+:root{
+  --bg:#f4f6f8;--panel:#fff;--panel2:#f8f9fb;--text:#1b1f24;--muted:#5d6672;--border:#d8dde3;
+  --accent:#0b67c2;--accent-ink:#fff;--accent-soft:#e3effb;--danger:#c62828;--danger-soft:#fdecea;
+  --ok:#1d7a33;--warn:#9a5a00;--warn-soft:#fff4e0;--log-bg:#0e1318;--log-text:#d3dae3;--input:#fff;
+  --mono:ui-monospace,SFMono-Regular,Consolas,"Cascadia Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0d1014;--panel:#161a20;--panel2:#1b2027;--text:#e5e9ee;--muted:#98a2ae;--border:#2a313b;
+  --accent:#4b9cf0;--accent-ink:#06121f;--accent-soft:#16283b;--danger:#f06a66;--danger-soft:#3a1b1b;
+  --ok:#5cc777;--warn:#f0b24e;--warn-soft:#33270f;--log-bg:#080a0d;--log-text:#d3dae3;--input:#10141a;
+}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,input,select{font:inherit;color:inherit}
+h1{font-size:18px;margin:0}
+h2{font-size:14px;margin:0 0 10px;font-weight:650}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;background:var(--panel);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px}
+.brand svg{color:var(--accent)}
+.sub{color:var(--muted);font-size:12px}
+.portbox{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{padding:4px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--border);font-size:12px;color:var(--muted)}
+.pill.on{color:var(--ok);border-color:var(--ok)}
+.banner{margin:12px 16px 0;padding:10px 12px;border-radius:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.banner.err{background:var(--danger-soft);color:var(--danger)}
+.banner.info{background:var(--accent-soft);border:1px solid var(--accent)}
+.tabs{display:flex;gap:4px;padding:12px 16px 0;overflow-x:auto}
+.tabs button{border:1px solid var(--border);border-bottom:none;background:var(--panel2);padding:8px 14px;border-radius:8px 8px 0 0;cursor:pointer;white-space:nowrap;color:var(--muted)}
+.tabs button.on{background:var(--panel);color:var(--text);font-weight:600}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;padding:0 16px 16px;align-items:start}
+@media (max-width:1050px){.layout{grid-template-columns:minmax(0,1fr)}}
+.tab{display:none;border-top:1px solid var(--border);padding-top:16px}
+.tab.on{display:grid;gap:14px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.row+.row{margin-top:10px}
+.field{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.field input,.field select{min-width:0}
+input[type=text],input[type=number],select{background:var(--input);border:1px solid var(--border);border-radius:6px;padding:6px 8px;height:32px}
+input.addr{width:110px;font-family:var(--mono)}
+label.chk{display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer}
+.btn{border:1px solid var(--border);background:var(--panel2);padding:6px 12px;border-radius:6px;cursor:pointer;height:32px;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.danger{color:var(--danger);border-color:var(--danger);background:transparent}
+.btn.sm{height:26px;padding:2px 8px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.note{font-size:12px;color:var(--muted);margin:8px 0 0}
+.note.warn{color:var(--warn)}
+.sep{height:1px;background:var(--border);margin:12px 0}
+.info{display:grid;grid-template-columns:max-content 1fr;gap:3px 14px;font-size:13px;margin-top:10px}
+.info dt{color:var(--muted)}
+.info dd{margin:0;font-family:var(--mono);word-break:break-all}
+.tablewrap{overflow-x:auto;margin-top:10px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--border);vertical-align:middle}
+th{font-size:12px;color:var(--muted);font-weight:600}
+td.mono{font-family:var(--mono)}
+.fname{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle}
+.drop{border:1.5px dashed var(--border);border-radius:8px;padding:10px;text-align:center;color:var(--muted);font-size:12px;margin-top:10px}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+details summary{cursor:pointer;color:var(--muted);font-size:13px;margin-top:10px}
+.side{position:sticky;top:12px;margin-top:16px}
+@media (max-width:1050px){.side{position:static;margin-top:0}}
+.loghead{display:flex;align-items:center;gap:8px}
+.loghead h2{margin:0;flex:1}
+.status{font-size:12px;color:var(--muted)}
+.status.ok{color:var(--ok)}.status.err{color:var(--danger)}.status.run{color:var(--accent)}
+.progress{position:relative;height:18px;border-radius:5px;background:var(--panel2);border:1px solid var(--border);margin:10px 0;overflow:hidden}
+.progress div{position:absolute;inset:0 auto 0 0;width:0;background:var(--accent);transition:width .15s}
+.progress span{position:relative;font-size:11px;padding-left:6px;line-height:16px;mix-blend-mode:difference;color:#fff}
+.log{background:var(--log-bg);color:var(--log-text);font:12px/1.45 var(--mono);height:min(62vh,640px);overflow:auto;padding:8px;border-radius:6px;white-space:pre-wrap;word-break:break-word}
+.log .err{color:#ff7b72}.log .ok{color:#7ee787}.log .warn{color:#f2cc60}.log .dim{color:#7d8590}
+.mon{background:var(--log-bg);color:var(--log-text);font:12.5px/1.45 var(--mono);height:min(58vh,560px);overflow:auto;padding:10px;border-radius:6px;white-space:pre-wrap;word-break:break-all;margin:10px 0 0}
+.sendrow{display:flex;gap:8px;margin-top:10px}
+.sendrow input{flex:1;font-family:var(--mono)}
+body.busy .act{pointer-events:none;opacity:.45}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 1v4M15 1v4M9 19v4M15 19v4M1 9h4M1 15h4M19 9h4M19 15h4"/><path d="M13 8l-3 4h4l-3 4"/></svg>
+    <div><h1>Web Flasher</h1><div class="sub">ESP32 · ESP8266 · Arduino AVR — works in Chrome / Edge, nothing to install</div></div>
+  </div>
+  <div class="portbox">
+    <span id="portLabel" class="pill">No port selected</span>
+    <button id="btnPort" class="btn primary act">Select port</button>
+    <button id="btnPortForget" class="btn act" title="Close the port so other programs can use it">Release</button>
+  </div>
+</header>
+
+<div id="unsupported" class="banner err" hidden>This browser has no Web Serial support. Open this file in <b>Google Chrome</b> or <b>Microsoft Edge</b> (desktop).</div>
+<div id="portPrompt" class="banner info" hidden>
+  <span id="portPromptMsg"></span>
+  <button id="portPromptBtn" class="btn primary">Select bootloader port</button>
+  <button id="portPromptCancel" class="btn">Cancel</button>
+</div>
+
+<nav class="tabs" role="tablist">
+  <button data-tab="esp" class="on" role="tab">ESP32 / ESP8266</button>
+  <button data-tab="avr" role="tab">Arduino (AVR)</button>
+  <button data-tab="mon" role="tab">Serial monitor</button>
+</nav>
+
+<div class="layout">
+<main>
+<!-- ======================= ESP ======================= -->
+<section id="tab-esp" class="tab on">
+  <div class="card">
+    <h2>Connection &amp; chip info</h2>
+    <div class="row">
+      <label class="field">Flash baud
+        <select id="espBaud" data-persist><option>115200</option><option>230400</option><option selected>460800</option><option>921600</option></select></label>
+      <label class="field">Reset into bootloader
+        <select id="espBefore" data-persist>
+          <option value="default_reset">Auto (DTR/RTS – USB-UART boards)</option>
+          <option value="usb_reset">Native USB (S2/S3/C3/C6 USB-CDC)</option>
+          <option value="no_reset">Manual (hold BOOT, tap RESET)</option>
+        </select></label>
+      <button id="espConnect" class="btn primary act">Connect / chip info</button>
+      <button id="espDisconnect" class="btn act">Disconnect</button>
+      <button id="espReset" class="btn act">Reset board</button>
+    </div>
+    <dl id="espInfo" class="info"><dt>Status</dt><dd>Not connected</dd></dl>
+  </div>
+
+  <div class="card" id="espFilesCard">
+    <h2>Files to flash (firmware, bootloader, partitions, filesystem)</h2>
+    <div class="row">
+      <label class="field">Chip family (for presets)
+        <select id="espFamily" data-persist>
+          <option value="auto">Auto (connected chip)</option>
+          <option>ESP32</option><option>ESP32-S2</option><option>ESP32-S3</option><option>ESP32-C3</option>
+          <option>ESP32-C6</option><option>ESP32-H2</option><option>ESP32-C2</option><option>ESP32-C5</option><option>ESP32-P4</option><option>ESP8266</option>
+        </select></label>
+      <button class="btn act" id="presetMerged" title="One merged/factory image written at 0x0">Merged .bin @ 0x0</button>
+      <button class="btn act" id="presetArduino" title="bootloader + partitions + boot_app0 + app">Arduino / PlatformIO (4 files)</button>
+      <button class="btn act" id="presetApp">App only @ 0x10000</button>
+      <button class="btn act" id="presetFs">+ Filesystem image</button>
+    </div>
+    <div class="row">
+      <button class="btn act" id="espAddFiles">+ Add files…</button>
+      <button class="btn act" id="espClearFiles">Clear list</button>
+      <input type="file" id="espFilePicker" multiple accept=".bin,.hex,.img" hidden>
+    </div>
+    <div class="tablewrap"><table>
+      <thead><tr><th></th><th>Address</th><th>Part</th><th>File</th><th></th></tr></thead>
+      <tbody id="espRows"></tbody>
+    </table></div>
+    <div class="drop" id="espDrop">Drop .bin / .hex files here — addresses are guessed from the file name (bootloader, partitions, boot_app0, littlefs/spiffs, merged…). Check them before flashing.</div>
+    <p class="note">Filesystem image = <code>littlefs.bin</code> / <code>spiffs.bin</code> / <code>fatfs.bin</code> from PlatformIO “Build Filesystem Image” or <code>mklittlefs</code>. Its address must match your partition table — use “Read partition table from board” below to get it.</p>
+  </div>
+
+  <div class="card">
+    <h2>Flash options</h2>
+    <div class="row">
+      <label class="field">Flash mode<select id="espMode" data-persist><option value="keep">Keep (from image)</option><option>qio</option><option>qout</option><option>dio</option><option>dout</option></select></label>
+      <label class="field">Flash freq<select id="espFreq" data-persist><option value="keep">Keep</option><option>80m</option><option>40m</option><option>26m</option><option>20m</option></select></label>
+      <label class="field">Flash size<select id="espSize" data-persist><option value="keep">Keep</option><option value="detect">Detect</option><option>1MB</option><option>2MB</option><option>4MB</option><option>8MB</option><option>16MB</option><option>32MB</option></select></label>
+      <label class="field">After flashing<select id="espAfter" data-persist><option value="hard_reset">Reset &amp; run</option><option value="no_reset">Stay in bootloader</option></select></label>
+    </div>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="espEraseAll" data-persist> Erase entire flash first</label>
+      <label class="chk"><input type="checkbox" id="espCompress" checked data-persist> Compress (faster)</label>
+      <label class="chk"><input type="checkbox" id="espVerify" checked data-persist> Verify (MD5)</label>
+      <label class="chk"><input type="checkbox" id="espOpenMon" data-persist> Open serial monitor after</label>
+    </div>
+    <div class="row"><button id="espFlash" class="btn primary act">Flash selected files</button></div>
+  </div>
+
+  <div class="card">
+    <h2>Erase</h2>
+    <div class="row">
+      <button id="espEraseChip" class="btn danger act">Erase entire flash</button>
+    </div>
+    <div class="row">
+      <label class="field">Region start<input type="text" id="espErAddr" class="addr" value="0x9000"></label>
+      <label class="field">Size<input type="text" id="espErSize" class="addr" value="0x5000"></label>
+      <button id="espEraseRegion" class="btn danger act">Erase region</button>
+    </div>
+    <p class="note">Start and size must be multiples of 0x1000. Example: NVS (saved Wi-Fi etc.) in the default Arduino table is 0x9000 / 0x5000. Tip: the partition table below has an “Erase” button per partition.</p>
+  </div>
+
+  <div class="card">
+    <h2>Partition table, read &amp; backup</h2>
+    <div class="row">
+      <button id="espReadPart" class="btn act">Read partition table from board</button>
+    </div>
+    <div id="espPartWrap" class="tablewrap"></div>
+    <div class="sep"></div>
+    <div class="row">
+      <label class="field">Read start<input type="text" id="espRdAddr" class="addr" value="0x0"></label>
+      <label class="field">Size<input type="text" id="espRdSize" class="addr" value="0x400000"></label>
+      <button id="espRdFull" class="btn act" title="Use the detected flash size">Whole chip</button>
+      <button id="espRead" class="btn act">Read flash → .bin</button>
+    </div>
+    <p class="note">A full-chip backup can be written back later as a “Merged .bin @ 0x0”. 4 MB takes about 1–2 minutes at 921600 baud.</p>
+  </div>
+</section>
+
+<!-- ======================= AVR ======================= -->
+<section id="tab-avr" class="tab">
+  <div class="card">
+    <h2>Board</h2>
+    <div class="row">
+      <label class="field">Board
+        <select id="avrBoard" data-persist></select></label>
+      <button id="avrTest" class="btn primary act">Test connection</button>
+      <button id="avrReset" class="btn act">Reset board</button>
+    </div>
+    <details id="avrAdv">
+      <summary>Advanced configuration</summary>
+      <div class="row" style="margin-top:8px">
+        <label class="field">Protocol<select id="avrProto"><option value="stk500v1">STK500 v1 (Optiboot / ATmegaBOOT)</option><option value="stk500v2">STK500 v2 (Mega 2560)</option><option value="avr109">AVR109 (Caterina, 32U4)</option></select></label>
+        <label class="field">Baud<select id="avrBaud"><option>19200</option><option>57600</option><option>115200</option></select></label>
+        <label class="field">Reset method<select id="avrResetM"><option value="dtr">DTR pulse (auto-reset)</option><option value="touch">1200-baud touch</option><option value="none">None (press RESET yourself)</option></select></label>
+      </div>
+      <div class="row">
+        <label class="field">Page size (bytes)<input type="number" id="avrPage" style="width:100px"></label>
+        <label class="field">Program flash (bytes, excl. bootloader)<input type="number" id="avrFlashSz" style="width:150px"></label>
+        <label class="field">EEPROM (bytes)<input type="number" id="avrEeSz" style="width:110px"></label>
+      </div>
+    </details>
+    <dl id="avrInfo" class="info"><dt>Status</dt><dd>Not tested</dd></dl>
+  </div>
+
+  <div class="card">
+    <h2>Upload</h2>
+    <div class="row">
+      <button id="avrPickFlash" class="btn act">Choose program (.hex / .bin)…</button>
+      <span id="avrFlashName" class="note" style="margin:0">No file</span>
+      <input type="file" id="avrFlashFile" accept=".hex,.bin,.ihx" hidden>
+    </div>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="avrVerify" checked data-persist> Verify after write</label>
+      <button id="avrUpload" class="btn primary act">Upload program</button>
+    </div>
+    <div class="sep"></div>
+    <div class="row">
+      <button id="avrPickEe" class="btn act">Choose EEPROM data (.eep / .hex / .bin)…</button>
+      <span id="avrEeName" class="note" style="margin:0">No file</span>
+      <input type="file" id="avrEeFile" accept=".eep,.hex,.bin" hidden>
+      <button id="avrUploadEe" class="btn act">Upload EEPROM</button>
+    </div>
+    <p class="note">EEPROM writes need bootloader support (Mega 2560, Leonardo and Optiboot 8+ yes; the stock Uno bootloader no). If verify fails, use “Clear EEPROM (helper program)” or an ISP programmer.</p>
+  </div>
+
+  <div class="card">
+    <h2>Erase</h2>
+    <div class="row">
+      <button id="avrErase" class="btn danger act">Erase program (blank)</button>
+      <label class="field">Region start<input type="text" id="avrErAddr" class="addr" value="0x0"></label>
+      <label class="field">Size<input type="text" id="avrErSize" class="addr" value="0x1000"></label>
+      <button id="avrEraseRegion" class="btn danger act">Erase region</button>
+    </div>
+    <div class="row">
+      <button id="avrEeClear" class="btn danger act">Clear EEPROM (bootloader)</button>
+      <button id="avrEeHelper" class="btn danger act">Clear EEPROM (helper program)</button>
+    </div>
+    <p class="note">The bootloader itself can’t be erased over USB, only the program area. The helper program replaces your sketch with a tiny routine that sets every EEPROM byte to 0xFF and turns the on-board LED on when done — upload your sketch again afterwards. Fuses and burning a bootloader need an ISP programmer (USBasp / Arduino as ISP).</p>
+  </div>
+
+  <div class="card">
+    <h2>Read &amp; backup</h2>
+    <div class="row">
+      <button id="avrBkHex" class="btn act">Program → .hex</button>
+      <button id="avrBkBin" class="btn act">Program → .bin</button>
+      <button id="avrBkEe" class="btn act">EEPROM → .eep</button>
+      <button id="avrBkEeBin" class="btn act">EEPROM → .bin</button>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= MONITOR ======================= -->
+<section id="tab-mon" class="tab">
+  <div class="card">
+    <h2>Serial monitor</h2>
+    <div class="row">
+      <label class="field">Baud
+        <select id="monBaud" data-persist>
+          <option>300</option><option>1200</option><option>2400</option><option>4800</option><option>9600</option><option>19200</option><option>38400</option><option>57600</option><option>74880</option><option selected>115200</option><option>230400</option><option>460800</option><option>921600</option><option>1000000</option><option>2000000</option>
+        </select></label>
+      <label class="field">Line ending
+        <select id="monEol" data-persist><option value="">None</option><option value="\n" selected>LF (\n)</option><option value="\r">CR (\r)</option><option value="\r\n">CR+LF</option></select></label>
+      <button id="monConnect" class="btn primary act">Connect</button>
+      <button id="monDisconnect" class="btn">Disconnect</button>
+    </div>
+    <div class="row">
+      <button id="monRstEsp" class="btn sm" title="Pulse RTS (EN pin)">Reset ESP</button>
+      <button id="monBootEsp" class="btn sm" title="DTR/RTS sequence into ROM download mode">ESP → download mode</button>
+      <button id="monRstAvr" class="btn sm" title="Pulse DTR">Reset Arduino</button>
+      <label class="chk"><input type="checkbox" id="monTs" data-persist> Timestamps</label>
+      <label class="chk"><input type="checkbox" id="monHex" data-persist> Hex view</label>
+      <label class="chk"><input type="checkbox" id="monAuto" checked> Autoscroll</label>
+      <button id="monClear" class="btn sm">Clear</button>
+      <button id="monSave" class="btn sm">Save log</button>
+    </div>
+    <pre id="monOut" class="mon"></pre>
+    <div class="sendrow">
+      <input type="text" id="monInput" placeholder="Type and press Enter to send…">
+      <button id="monSend" class="btn">Send</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<aside class="side">
+  <div class="card">
+    <div class="loghead"><h2>Log</h2><span id="status" class="status">Idle</span>
+      <button id="logSave" class="btn sm">Save</button><button id="logClear" class="btn sm">Clear</button></div>
+    <div class="progress"><div id="progBar"></div><span id="progText"></span></div>
+    <div id="log" class="log"></div>
+  </div>
+</aside>
+</div>
+
+<script>
+/*@@ESPTOOL_BUNDLE@@*/
+</script>
+<script>
+"use strict";
+/* ============================ helpers ============================ */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const hex = (n, w = 0) => "0x" + (n >>> 0).toString(16).toUpperCase().padStart(w, "0");
+const fmtSize = n => n >= 1048576 ? (n / 1048576).toFixed(2) + " MB" : n >= 1024 ? (n / 1024).toFixed(1) + " KB" : n + " B";
+function parseNum(s) {
+  s = String(s).trim().toLowerCase().replace(/_/g, "");
+  if (!s) return NaN;
+  let mul = 1;
+  if (/k$/.test(s)) { mul = 1024; s = s.slice(0, -1); } else if (/m$/.test(s)) { mul = 1048576; s = s.slice(0, -1); }
+  const v = /^0x[0-9a-f]+$/.test(s) ? parseInt(s, 16) : /^\d+(\.\d+)?$/.test(s) ? Number(s) : NaN;
+  return v * mul;
+}
+function download(name, data, type = "application/octet-stream") {
+  const url = URL.createObjectURL(new Blob([data], { type }));
+  const a = Object.assign(document.createElement("a"), { href: url, download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+const stamp = () => new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+
+/* MD5 (RFC 1321) over a Uint8Array, returns lowercase hex */
+function md5(bytes) {
+  const K = new Int32Array(64);
+  for (let i = 0; i < 64; i++) K[i] = Math.floor(Math.abs(Math.sin(i + 1)) * 4294967296) | 0;
+  const S = [7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21];
+  const len = bytes.length, nWords = (((len + 8) >>> 6) + 1) * 16, w = new Int32Array(nWords);
+  for (let i = 0; i < len; i++) w[i >> 2] |= bytes[i] << ((i & 3) * 8);
+  w[len >> 2] |= 0x80 << ((len & 3) * 8);
+  w[nWords - 2] = (len * 8) >>> 0; w[nWords - 1] = Math.floor(len / 0x20000000);
+  let a0 = 0x67452301, b0 = 0xefcdab89 | 0, c0 = 0x98badcfe | 0, d0 = 0x10325476;
+  for (let o = 0; o < nWords; o += 16) {
+    let A = a0, B = b0, C = c0, D = d0;
+    for (let i = 0; i < 64; i++) {
+      let F, g;
+      if (i < 16) { F = (B & C) | (~B & D); g = i; }
+      else if (i < 32) { F = (D & B) | (~D & C); g = (5 * i + 1) & 15; }
+      else if (i < 48) { F = B ^ C ^ D; g = (3 * i + 5) & 15; }
+      else { F = C ^ (B | ~D); g = (7 * i) & 15; }
+      const s = S[(i >> 4) * 4 + (i & 3)];
+      F = (F + A + K[i] + w[o + g]) | 0;
+      A = D; D = C; C = B;
+      B = (B + ((F << s) | (F >>> (32 - s)))) | 0;
+    }
+    a0 = (a0 + A) | 0; b0 = (b0 + B) | 0; c0 = (c0 + C) | 0; d0 = (d0 + D) | 0;
+  }
+  return [a0, b0, c0, d0].map(x => { let h = ""; for (let i = 0; i < 4; i++) h += ((x >>> (i * 8)) & 255).toString(16).padStart(2, "0"); return h; }).join("");
+}
+
+/* Intel HEX → [{address, data}] (chunks closer than 4 KB are merged, gaps filled with 0xFF) */
+function parseIntelHex(text) {
+  const chunks = []; let base = 0, ln = 0;
+  for (const raw of text.split(/\r?\n/)) {
+    ln++;
+    const s = raw.trim();
+    if (!s) continue;
+    if (s[0] !== ":" || s.length % 2 === 0) throw new Error(`HEX line ${ln}: not a valid record`);
+    const b = new Uint8Array((s.length - 1) / 2);
+    for (let i = 0; i < b.length; i++) b[i] = parseInt(s.substr(1 + i * 2, 2), 16);
+    if (b.length < 5 || b.length !== b[0] + 5) throw new Error(`HEX line ${ln}: bad length`);
+    if (b.reduce((x, v) => (x + v) & 0xff, 0) !== 0) throw new Error(`HEX line ${ln}: checksum error`);
+    const type = b[3], addr = (b[1] << 8) | b[2], data = b.slice(4, 4 + b[0]);
+    if (type === 0) chunks.push({ addr: base + addr, data });
+    else if (type === 1) break;
+    else if (type === 2) base = ((data[0] << 8) | data[1]) << 4;
+    else if (type === 4) base = ((data[0] << 8) | data[1]) * 65536;
+  }
+  if (!chunks.length) throw new Error("HEX file contains no data");
+  chunks.sort((x, y) => x.addr - y.addr);
+  const segs = [];
+  for (const c of chunks) {
+    const last = segs[segs.length - 1];
+    if (last && c.addr <= last.end + 4096) { last.parts.push(c); last.end = Math.max(last.end, c.addr + c.data.length); }
+    else segs.push({ addr: c.addr, end: c.addr + c.data.length, parts: [c] });
+  }
+  return segs.map(s => {
+    const d = new Uint8Array(s.end - s.addr).fill(0xff);
+    for (const p of s.parts) d.set(p.data, p.addr - s.addr);
+    return { address: s.addr, data: d };
+  });
+}
+function segsToFlat(segs) {
+  const end = Math.max(...segs.map(s => s.address + s.data.length));
+  const out = new Uint8Array(end).fill(0xff);
+  for (const s of segs) out.set(s.data, s.address);
+  return out;
+}
+function toIntelHex(data, skipFF = true) {
+  const rec = (type, addr, bytes) => {
+    const arr = [bytes.length, (addr >> 8) & 0xff, addr & 0xff, type, ...bytes];
+    arr.push((-arr.reduce((x, v) => x + v, 0)) & 0xff);
+    return ":" + arr.map(v => v.toString(16).toUpperCase().padStart(2, "0")).join("");
+  };
+  const lines = []; let upper = -1;
+  for (let i = 0; i < data.length; i += 16) {
+    const chunk = data.subarray(i, i + 16);
+    if (skipFF && chunk.every(v => v === 0xff)) continue;
+    if ((i >>> 16) !== upper) { upper = i >>> 16; if (upper || i >= 65536) lines.push(rec(4, 0, [upper >> 8, upper & 0xff])); }
+    lines.push(rec(0, i & 0xffff, chunk));
+  }
+  lines.push(":00000001FF");
+  return lines.join("\r\n") + "\r\n";
+}
+async function readFileBytes(file) { return new Uint8Array(await file.arrayBuffer()); }
+/* load a .hex/.eep/.bin as a flat image starting at address 0 */
+async function loadFlatImage(file) {
+  const bytes = await readFileBytes(file);
+  if (/\.(hex|eep|ihx)$/i.test(file.name)) return segsToFlat(parseIntelHex(new TextDecoder().decode(bytes)));
+  return bytes;
+}
+
+/* ============================ log / status ============================ */
+const logEl = $("#log");
+let partial = null;
+function log(msg, cls = "") {
+  partial = null;
+  const d = document.createElement("div");
+  if (cls) d.className = cls;
+  d.textContent = msg;
+  logEl.append(d);
+  while (logEl.childElementCount > 4000) logEl.firstChild.remove();
+  logEl.scrollTop = logEl.scrollHeight;
+}
+const espTerm = {
+  clean() {},
+  writeLine(s) { log(s, "dim"); },
+  write(s) {
+    if (!partial) { partial = document.createElement("div"); partial.className = "dim"; logEl.append(partial); }
+    partial.textContent += s; logEl.scrollTop = logEl.scrollHeight;
+  },
+};
+function setStatus(t, cls = "") { const s = $("#status"); s.textContent = t; s.className = "status " + cls; }
+function setProgress(frac, label = "") {
+  $("#progBar").style.width = frac == null ? "0" : Math.min(100, frac * 100).toFixed(1) + "%";
+  $("#progText").textContent = frac == null ? "" : `${label} ${Math.floor(frac * 100)}%`;
+}
+$("#logClear").onclick = () => { logEl.textContent = ""; partial = null; };
+$("#logSave").onclick = () => download(`flasher-log-${stamp()}.txt`, logEl.innerText, "text/plain");
+
+let busy = false;
+function setBusy(b) { busy = b; document.body.classList.toggle("busy", b); $$(".act").forEach(x => x.disabled = b); }
+async function run(label, fn) {
+  if (busy) return;
+  setBusy(true); setStatus(label + "…", "run");
+  log(`▶ ${label}`);
+  const t0 = performance.now();
+  try {
+    await fn();
+    const s = ((performance.now() - t0) / 1000).toFixed(1);
+    setStatus(`${label}: done (${s} s)`, "ok");
+  } catch (e) {
+    console.error(e);
+    log("✖ " + (e && e.message ? e.message : e), "err");
+    setStatus(`${label}: failed`, "err");
+  } finally { setBusy(false); setProgress(null); }
+}
+const onClick = (id, label, fn) => $("#" + id).addEventListener("click", () => run(label, fn));
+
+/* ============================ port handling ============================ */
+const USB_CHIPS = { "10c4:ea60": "CP210x", "1a86:7523": "CH340", "1a86:55d4": "CH9102", "1a86:55d3": "CH343", "0403:6001": "FTDI", "0403:6015": "FTDI FT231X",
+  "2341:0043": "Arduino Uno", "2341:0001": "Arduino Uno", "2341:0010": "Arduino Mega 2560", "2341:0042": "Arduino Mega 2560", "2341:8036": "Arduino Leonardo",
+  "2341:0036": "Leonardo bootloader", "2341:8037": "Arduino Micro", "2341:0037": "Micro bootloader", "1b4f:9206": "Pro Micro", "1b4f:9205": "Pro Micro bootloader",
+  "303a:1001": "ESP USB-Serial/JTAG", "303a:0002": "ESP32-S2 USB" };
+const state = { port: null, owner: null };
+function portName(p) {
+  if (!p) return "No port selected";
+  const i = p.getInfo();
+  if (!i.usbVendorId) return "Serial port";
+  const id = `${i.usbVendorId.toString(16).padStart(4, "0")}:${i.usbProductId.toString(16).padStart(4, "0")}`;
+  return (USB_CHIPS[id] || (i.usbVendorId === 0x303a ? "Espressif USB" : "USB serial")) + ` (${id})`;
+}
+function showPort() { const l = $("#portLabel"); l.textContent = portName(state.port); l.classList.toggle("on", !!state.port); }
+async function release() {
+  const o = state.owner; state.owner = null;
+  if (o) { try { await o.close(); } catch (e) { console.warn(e); } }
+}
+async function selectPort() {
+  const p = await navigator.serial.requestPort();
+  await release();
+  state.port = p; showPort();
+  log("Port selected: " + portName(p));
+}
+async function requirePort() { if (!state.port) await selectPort(); }
+$("#btnPort").onclick = () => run("Select port", selectPort);
+$("#btnPortForget").onclick = () => run("Release port", async () => { await release(); log("Port closed."); });
+
+/* Prompt the user for a (new) port – needed after the 1200-baud touch on 32U4 boards */
+function askForPort(msg) {
+  return new Promise((resolve, reject) => {
+    const box = $("#portPrompt");
+    $("#portPromptMsg").textContent = msg;
+    box.hidden = false;
+    const done = () => { box.hidden = true; $("#portPromptBtn").onclick = $("#portPromptCancel").onclick = null; };
+    $("#portPromptBtn").onclick = async () => {
+      try { const p = await navigator.serial.requestPort(); done(); resolve(p); }
+      catch (e) { /* user closed the chooser: keep the prompt */ }
+    };
+    $("#portPromptCancel").onclick = () => { done(); reject(new Error("Cancelled")); };
+  });
+}
+
+/* Byte-oriented serial link (used for Arduino + monitor) */
+class Link {
+  constructor(port, buffered = true) { this.port = port; this.buffered = buffered; this.buf = []; this.waiter = null; this.onData = null; this.onClose = null; }
+  async open(baudRate) {
+    await this.port.open({ baudRate, bufferSize: 8192 });
+    this.reader = this.port.readable.getReader();
+    this.writer = this.port.writable.getWriter();
+    this.closed = false;
+    this.loop();
+  }
+  async loop() {
+    try {
+      for (;;) {
+        const { value, done } = await this.reader.read();
+        if (done) break;
+        if (!value || !value.length) continue;
+        if (this.buffered) for (const b of value) this.buf.push(b);
+        if (this.onData) this.onData(value);
+        this.wake();
+      }
+    } catch (e) { /* port lost */ }
+    if (!this.closed && this.onClose) this.onClose();
+  }
+  wake() { const w = this.waiter; this.waiter = null; if (w) w(); }
+  flush() { this.buf.length = 0; }
+  async read(n, timeout = 1000) {
+    const end = Date.now() + timeout;
+    while (this.buf.length < n) {
+      const left = end - Date.now();
+      if (left <= 0) throw new Error("Timeout: no response from board");
+      await new Promise(r => { this.waiter = r; setTimeout(r, left); });
+    }
+    return Uint8Array.from(this.buf.splice(0, n));
+  }
+  async write(bytes) { await this.writer.write(bytes instanceof Uint8Array ? bytes : Uint8Array.from(bytes)); }
+  async signals(o) { await this.port.setSignals(o); }
+  async close() {
+    if (this.closed) return;
+    this.closed = true;
+    try { await this.reader.cancel(); } catch (e) {}
+    try { this.reader.releaseLock(); } catch (e) {}
+    try { this.writer.releaseLock(); } catch (e) {}
+    try { await this.port.close(); } catch (e) {}
+  }
+}
+
+/* ============================ ESP32 / ESP8266 ============================ */
+const { ESPLoader, Transport } = window.esptool;
+let esp = null, lastChip = null, espPartitions = null;
+
+function bootAddrFor(chip) {
+  if (chip === "ESP32" || chip === "ESP32-S2") return 0x1000;
+  if (chip === "ESP32-P4" || chip === "ESP32-C5") return 0x2000;
+  return 0x0;
+}
+function family() {
+  const f = $("#espFamily").value;
+  if (f !== "auto") return f;
+  return esp?.chip || lastChip || "ESP32";
+}
+
+async function espEnsure() {
+  await requirePort();
+  if (esp && state.owner?.name === "esp") return esp;
+  await release();
+  const transport = new Transport(state.port, false);
+  const loader = new ESPLoader({ transport, baudrate: +$("#espBaud").value, terminal: espTerm, debugLogging: false });
+  log("Connecting… (if this hangs: hold BOOT, tap RESET/EN, release BOOT)");
+  try { await loader.main($("#espBefore").value); }
+  catch (e) { try { await transport.disconnect(); } catch (x) {} throw e; }
+  esp = { transport, loader, chip: loader.chip.CHIP_NAME, flashBytes: null };
+  lastChip = esp.chip;
+  state.owner = { name: "esp", close: async () => { const t = esp?.transport; esp = null; renderEspInfo(null); if (t) await t.disconnect(); } };
+  await espInfo();
+  return esp;
+}
+async function espInfo() {
+  const L = esp.loader, info = { Chip: esp.chip };
+  const tryGet = async (k, f) => { try { info[k] = await f(); } catch (e) { info[k] = "?"; } };
+  await tryGet("Description", () => L.chip.getChipDescription(L));
+  await tryGet("Features", async () => (await L.chip.getChipFeatures(L)).join(", "));
+  await tryGet("Crystal", async () => (await L.chip.getCrystalFreq(L)) + " MHz");
+  await tryGet("MAC", () => L.chip.readMac(L));
+  try {
+    const id = await L.readFlashId();
+    const sz = L.DETECTED_FLASH_SIZES[(id >> 16) & 0xff];
+    info["Flash ID"] = `manufacturer ${hex(id & 0xff, 2)}, device ${hex((id >> 8) & 0xffff, 4)}`;
+    info["Flash size"] = sz || "unknown";
+    if (sz) { esp.flashBytes = L.flashSizeBytes(sz); $("#espRdSize").value = hex(esp.flashBytes); }
+  } catch (e) { info["Flash ID"] = "?"; }
+  info["Bootloader addr"] = hex(bootAddrFor(esp.chip));
+  info.Status = "Connected (stub running)";
+  renderEspInfo(info);
+}
+function renderEspInfo(info) {
+  const dl = $("#espInfo"); dl.textContent = "";
+  for (const [k, v] of Object.entries(info || { Status: "Not connected" })) {
+    const dt = document.createElement("dt"); dt.textContent = k;
+    const dd = document.createElement("dd"); dd.textContent = v;
+    dl.append(dt, dd);
+  }
+}
+async function espHardReset() {
+  if (!esp) return;
+  const t = esp.transport;
+  await t.setDTR(false); await t.setRTS(true); await sleep(120); await t.setRTS(false); await sleep(50);
+  log("Board reset – running firmware.", "ok");
+  await release();
+}
+/* run an ESP operation; on failure drop the connection so the next try starts clean */
+async function espOp(fn) {
+  const e = await espEnsure();
+  try { return await fn(e); } catch (err) { await release(); throw err; }
+}
+
+/* ---- file rows ---- */
+let espRows = [], rowSeq = 0;
+function addRow(addr, role = "", file = null) {
+  const r = { id: ++rowSeq, on: true, addr: addr == null ? "" : hex(addr), role, name: "", size: 0, data: null, segs: null };
+  espRows.push(r);
+  if (file) loadRowFile(r, file); else renderRows();
+  return r;
+}
+async function loadRowFile(r, file) {
+  try {
+    const bytes = await readFileBytes(file);
+    r.name = file.name;
+    if (/\.hex$/i.test(file.name)) {
+      r.segs = parseIntelHex(new TextDecoder().decode(bytes)); r.data = null;
+      r.size = r.segs.reduce((s, x) => s + x.data.length, 0);
+      r.addr = "from HEX";
+    } else {
+      r.data = bytes; r.segs = null; r.size = bytes.length;
+      if (r.addr === "from HEX") r.addr = "";
+      if (/partition/i.test(file.name) || r.role === "partition table") {
+        try { showPartitions(parsePartitions(bytes), "file " + file.name); } catch (e) {}
+      }
+    }
+    log(`Loaded ${file.name} (${fmtSize(r.size)})`);
+  } catch (e) { log(`✖ ${file.name}: ${e.message}`, "err"); }
+  renderRows();
+}
+function fsDefaultAddr() {
+  const p = espPartitions?.find(x => x.type === 1 && [0x81, 0x82, 0x83].includes(x.subtype));
+  return p ? p.offset : 0x290000;
+}
+function guessFromName(name) {
+  const n = name.toLowerCase();
+  if (/\.hex$/.test(n)) return [null, "Intel HEX"];
+  if (/boot_app0|otadata/.test(n)) return [0xe000, "boot_app0 (OTA data)"];
+  if (/bootloader/.test(n)) return [bootAddrFor(family()), "bootloader"];
+  if (/partition/.test(n)) return [0x8000, "partition table"];
+  if (/littlefs|spiffs|fatfs|ffat|filesystem|(^|[^a-z])fs[^a-z]/.test(n)) return [fsDefaultAddr(), "filesystem image"];
+  if (/merged|factory|full|backup|combined/.test(n)) return [0x0, "merged image"];
+  return [family() === "ESP8266" ? 0x0 : 0x10000, "application"];
+}
+function addFiles(files) {
+  for (const f of files) {
+    const [addr, role] = guessFromName(f.name);
+    const empty = espRows.find(r => !r.data && !r.segs && r.role === role);
+    if (empty) { if (addr != null) empty.addr = hex(addr); loadRowFile(empty, f); }
+    else addRow(addr, role, f);
+  }
+}
+function renderRows() {
+  const tb = $("#espRows"); tb.textContent = "";
+  if (!espRows.length) {
+    const tr = tb.insertRow(); const td = tr.insertCell(); td.colSpan = 5; td.className = "note";
+    td.textContent = "No files yet — pick a preset or add/drop files.";
+    return;
+  }
+  for (const r of espRows) {
+    const tr = tb.insertRow();
+    const c0 = tr.insertCell(), cb = Object.assign(document.createElement("input"), { type: "checkbox", checked: r.on });
+    cb.onchange = () => r.on = cb.checked; c0.append(cb);
+    const c1 = tr.insertCell(), ai = Object.assign(document.createElement("input"), { type: "text", className: "addr", value: r.addr, disabled: !!r.segs });
+    ai.oninput = () => r.addr = ai.value; c1.append(ai);
+    const c2 = tr.insertCell(), ri = Object.assign(document.createElement("input"), { type: "text", value: r.role, placeholder: "label" });
+    ri.style.width = "150px"; ri.oninput = () => r.role = ri.value; c2.append(ri);
+    const c3 = tr.insertCell();
+    const fi = Object.assign(document.createElement("input"), { type: "file", accept: ".bin,.hex,.img", hidden: true });
+    fi.onchange = () => fi.files[0] && loadRowFile(r, fi.files[0]);
+    const fb = Object.assign(document.createElement("button"), { className: "btn sm", textContent: r.name ? "Change" : "Choose…" });
+    fb.onclick = () => fi.click();
+    const nm = Object.assign(document.createElement("span"), { className: "fname", textContent: r.name ? ` ${r.name} · ${fmtSize(r.size)}` : " (no file)", title: r.name });
+    c3.append(fb, fi, nm);
+    const c4 = tr.insertCell(), x = Object.assign(document.createElement("button"), { className: "btn sm", textContent: "✕", title: "Remove" });
+    x.onclick = () => { espRows = espRows.filter(q => q !== r); renderRows(); };
+    c4.append(x);
+  }
+}
+$("#presetMerged").onclick = () => { espRows = []; addRow(0, "merged image"); };
+$("#presetApp").onclick = () => { espRows = []; addRow(family() === "ESP8266" ? 0 : 0x10000, "application"); };
+$("#presetArduino").onclick = () => {
+  espRows = [];
+  if (family() === "ESP8266") { addRow(0, "application"); log("ESP8266 uses a single image at 0x0."); return; }
+  addRow(bootAddrFor(family()), "bootloader");
+  addRow(0x8000, "partition table");
+  addRow(0xe000, "boot_app0 (OTA data)");
+  addRow(0x10000, "application");
+  log(`Preset for ${family()}: bootloader @ ${hex(bootAddrFor(family()))}. Files are in .pio/build/<env>/ (PlatformIO) or the Arduino build folder; boot_app0.bin is in the ESP32 core’s tools/partitions folder.`);
+};
+$("#presetFs").onclick = () => addRow(fsDefaultAddr(), "filesystem image");
+$("#espAddFiles").onclick = () => $("#espFilePicker").click();
+$("#espFilePicker").onchange = e => { addFiles([...e.target.files]); e.target.value = ""; };
+$("#espClearFiles").onclick = () => { espRows = []; renderRows(); };
+{
+  const card = $("#espFilesCard"), drop = $("#espDrop");
+  card.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+  card.addEventListener("dragleave", e => { if (!card.contains(e.relatedTarget)) drop.classList.remove("over"); });
+  card.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); addFiles([...e.dataTransfer.files]); });
+}
+
+function espFileArray() {
+  const rows = espRows.filter(r => r.on);
+  if (!rows.length) throw new Error("No files selected. Pick a preset or add files first.");
+  const arr = [];
+  for (const r of rows) {
+    if (!r.data && !r.segs) throw new Error(`“${r.role || "row"}” has no file chosen (untick it or choose a file).`);
+    if (r.segs) {
+      for (const s of r.segs) {
+        const pad = s.address % 4096;
+        let d = s.data;
+        if (pad) { d = new Uint8Array(pad + s.data.length).fill(0xff); d.set(s.data, pad); }
+        arr.push({ address: s.address - pad, data: d, label: r.name });
+      }
+    } else {
+      const a = parseNum(r.addr);
+      if (!Number.isFinite(a) || a < 0) throw new Error(`Invalid address “${r.addr}” for ${r.name}`);
+      if (a % 4096) throw new Error(`Address ${hex(a)} for ${r.name} must be a multiple of 0x1000`);
+      arr.push({ address: a, data: r.data, label: r.name });
+    }
+  }
+  arr.sort((x, y) => x.address - y.address);
+  for (let i = 1; i < arr.length; i++) {
+    const p = arr[i - 1];
+    if (p.address + p.data.length > arr[i].address)
+      throw new Error(`${p.label} (${hex(p.address)}–${hex(p.address + p.data.length)}) overlaps ${arr[i].label} at ${hex(arr[i].address)}`);
+  }
+  return arr;
+}
+
+onClick("espConnect", "Connect ESP", async () => { await release(); await espEnsure(); });
+onClick("espDisconnect", "Disconnect", async () => { await release(); log("Disconnected."); });
+onClick("espReset", "Reset board", async () => {
+  await requirePort();
+  if (esp) return espHardReset();
+  await release();
+  const l = new Link(state.port, false); await l.open(115200);
+  try { await l.signals({ dataTerminalReady: false, requestToSend: true }); await sleep(120); await l.signals({ requestToSend: false }); }
+  finally { await l.close(); }
+  log("Reset pulse sent (RTS → EN).", "ok");
+});
+
+onClick("espFlash", "Flash ESP", async () => {
+  const files = espFileArray();
+  const total = files.reduce((s, f) => s + f.data.length, 0);
+  for (const f of files) log(`  ${hex(f.address, 6)}  ${f.label}  ${fmtSize(f.data.length)}`);
+  await espOp(async ({ loader, flashBytes }) => {
+    const last = files[files.length - 1];
+    if (flashBytes && last.address + last.data.length > flashBytes)
+      throw new Error(`${last.label} ends at ${hex(last.address + last.data.length)}, beyond the ${fmtSize(flashBytes)} flash`);
+    const before = []; let acc = 0;
+    for (const f of files) { before.push(acc); acc += f.data.length; }
+    const verify = $("#espVerify").checked;
+    await loader.writeFlash({
+      fileArray: files.map(f => ({ data: f.data, address: f.address })),
+      flashMode: $("#espMode").value, flashFreq: $("#espFreq").value, flashSize: $("#espSize").value,
+      eraseAll: $("#espEraseAll").checked, compress: $("#espCompress").checked,
+      reportProgress: (i, written, tot) => setProgress((before[i] + (tot ? written / tot : 1) * files[i].data.length) / total, "Writing"),
+      calculateMD5Hash: verify ? img => md5(img) : undefined,
+    });
+    log(verify ? "✔ Flash written and verified (MD5 match)." : "✔ Flash written.", "ok");
+    if ($("#espAfter").value === "hard_reset") await espHardReset();
+  });
+  if ($("#espOpenMon").checked) { await release(); switchTab("mon"); await monStart(); }
+});
+
+onClick("espEraseChip", "Erase entire flash", async () => {
+  if (!confirm("Erase the ENTIRE flash? Firmware, filesystem and saved settings will be lost.")) throw new Error("Cancelled");
+  await espOp(async ({ loader }) => { await loader.eraseFlash(); log("✔ Flash erased.", "ok"); });
+});
+async function espEraseRegion(addr, size) {
+  if (!Number.isFinite(addr) || !Number.isFinite(size) || size <= 0) throw new Error("Invalid start or size");
+  if (addr % 4096 || size % 4096) throw new Error("Start and size must be multiples of 0x1000 (4 KB)");
+  await espOp(async ({ loader, flashBytes }) => {
+    if (flashBytes && addr + size > flashBytes) throw new Error("Region is beyond the end of flash");
+    const pkt = loader._appendArray(loader._intToByteArray(addr), loader._intToByteArray(size));
+    log(`Erasing ${hex(addr)}–${hex(addr + size)} (${fmtSize(size)})…`);
+    await loader.checkCommand("erase region", loader.ESP_ERASE_REGION, pkt, 0, 0,
+      Math.max(loader.timeoutPerMb(loader.ERASE_REGION_TIMEOUT_PER_MB, size), loader.DEFAULT_TIMEOUT));
+    log("✔ Region erased.", "ok");
+  });
+}
+onClick("espEraseRegion", "Erase region", () => espEraseRegion(parseNum($("#espErAddr").value), parseNum($("#espErSize").value)));
+
+async function espRead(addr, size, name) {
+  if (!Number.isFinite(addr) || !Number.isFinite(size) || size <= 0) throw new Error("Invalid start or size");
+  const data = await espOp(async ({ loader, flashBytes }) => {
+    if (flashBytes && addr + size > flashBytes) throw new Error(`Range ends beyond the ${fmtSize(flashBytes)} flash`);
+    return loader.readFlash(addr, size, (pkt, got, tot) => setProgress(got / tot, "Reading"));
+  });
+  download(name || `${(esp?.chip || lastChip || "esp").toLowerCase()}_${hex(addr)}_${hex(size)}_${stamp()}.bin`, data);
+  log(`✔ Read ${fmtSize(data.length)} — saved to Downloads.`, "ok");
+  return data;
+}
+$("#espRdFull").onclick = () => {
+  if (!esp?.flashBytes) { log("Connect first so the flash size can be detected.", "warn"); return; }
+  $("#espRdAddr").value = "0x0"; $("#espRdSize").value = hex(esp.flashBytes);
+};
+onClick("espRead", "Read flash", () => espRead(parseNum($("#espRdAddr").value), parseNum($("#espRdSize").value)));
+
+/* ---- partition table ---- */
+const PT_APP = { 0x00: "factory", 0x20: "test" };
+const PT_DATA = { 0x00: "ota", 0x01: "phy", 0x02: "nvs", 0x03: "coredump", 0x04: "nvs_keys", 0x05: "efuse", 0x06: "undefined", 0x80: "esphttpd", 0x81: "fat", 0x82: "spiffs", 0x83: "littlefs" };
+function parsePartitions(b) {
+  const out = [];
+  for (let o = 0; o + 32 <= b.length; o += 32) {
+    const magic = b[o] | (b[o + 1] << 8);
+    if (magic !== 0x50aa) break;
+    const dv = new DataView(b.buffer, b.byteOffset + o, 32);
+    let label = ""; for (let i = 12; i < 28 && b[o + i]; i++) label += String.fromCharCode(b[o + i]);
+    out.push({ type: b[o + 2], subtype: b[o + 3], offset: dv.getUint32(4, true), size: dv.getUint32(8, true), label });
+  }
+  if (!out.length) throw new Error("No partition table found (no 0xAA50 entries)");
+  return out;
+}
+function subName(p) {
+  if (p.type === 0) return p.subtype >= 0x10 && p.subtype < 0x20 ? "ota_" + (p.subtype - 0x10) : PT_APP[p.subtype] || hex(p.subtype, 2);
+  if (p.type === 1) return PT_DATA[p.subtype] || hex(p.subtype, 2);
+  return hex(p.subtype, 2);
+}
+function showPartitions(parts, source) {
+  espPartitions = parts;
+  const wrap = $("#espPartWrap"); wrap.textContent = "";
+  const cap = Object.assign(document.createElement("p"), { className: "note", textContent: `Partition table from ${source}:` });
+  const t = document.createElement("table");
+  t.innerHTML = "<thead><tr><th>Name</th><th>Type</th><th>Subtype</th><th>Offset</th><th>Size</th><th></th></tr></thead>";
+  const tb = t.createTBody();
+  for (const p of parts) {
+    const tr = tb.insertRow();
+    tr.insertCell().textContent = p.label;
+    tr.insertCell().textContent = p.type === 0 ? "app" : p.type === 1 ? "data" : hex(p.type, 2);
+    tr.insertCell().textContent = subName(p);
+    const co = tr.insertCell(); co.className = "mono"; co.textContent = hex(p.offset);
+    const cs = tr.insertCell(); cs.className = "mono"; cs.textContent = `${hex(p.size)} (${fmtSize(p.size)})`;
+    const ca = tr.insertCell();
+    const mk = (txt, cls, fn, title) => { const b = Object.assign(document.createElement("button"), { className: "btn sm act " + cls, textContent: txt, title: title || "" }); b.onclick = fn; ca.append(b, " "); };
+    if (p.type === 1 && [0x81, 0x82, 0x83].includes(p.subtype))
+      mk("Use for FS image", "", () => { let r = espRows.find(x => x.role === "filesystem image"); if (!r) r = addRow(p.offset, "filesystem image"); else { r.addr = hex(p.offset); renderRows(); } log(`Filesystem row set to ${hex(p.offset)} (${p.label}, max ${fmtSize(p.size)}).`); });
+    if (p.type === 0)
+      mk("Use for app", "", () => { let r = espRows.find(x => x.role === "application"); if (!r) r = addRow(p.offset, "application"); else { r.addr = hex(p.offset); renderRows(); } });
+    mk("Backup", "", () => run(`Backup ${p.label}`, () => espRead(p.offset, p.size, `${p.label}_${hex(p.offset)}_${stamp()}.bin`)));
+    mk("Erase", "danger", () => run(`Erase ${p.label}`, async () => {
+      if (!confirm(`Erase partition “${p.label}” (${fmtSize(p.size)} at ${hex(p.offset)})?`)) throw new Error("Cancelled");
+      await espEraseRegion(p.offset, Math.ceil(p.size / 4096) * 4096);
+    }));
+  }
+  wrap.append(cap, t);
+  const fs = parts.find(x => x.type === 1 && [0x81, 0x82, 0x83].includes(x.subtype));
+  if (fs) log(`Filesystem partition “${fs.label}” (${subName(fs)}) at ${hex(fs.offset)}, ${fmtSize(fs.size)}.`);
+}
+onClick("espReadPart", "Read partition table", async () => {
+  const data = await espOp(({ loader }) => loader.readFlash(0x8000, 0xc00));
+  showPartitions(parsePartitions(data), "board @ 0x8000");
+});
+
+/* ============================ Arduino (AVR) ============================ */
+const AVR_BOARDS = {
+  uno:      { name: "Arduino Uno (Optiboot)",               proto: "stk500v1", baud: 115200, reset: "dtr",   page: 128, flash: 32256,  eeprom: 1024, sig: ["1e950f"], led: ["b", 5] },
+  nano:     { name: "Arduino Nano – new bootloader",        proto: "stk500v1", baud: 115200, reset: "dtr",   page: 128, flash: 32256,  eeprom: 1024, sig: ["1e950f"], led: ["b", 5] },
+  nanoOld:  { name: "Arduino Nano – old bootloader",        proto: "stk500v1", baud: 57600,  reset: "dtr",   page: 128, flash: 30720,  eeprom: 1024, sig: ["1e950f"], led: ["b", 5] },
+  pro16:    { name: "Pro Mini 5V 16 MHz (ATmega328P)",      proto: "stk500v1", baud: 57600,  reset: "dtr",   page: 128, flash: 30720,  eeprom: 1024, sig: ["1e950f"], led: ["b", 5] },
+  pro8:     { name: "Pro Mini 3.3V 8 MHz (ATmega328P)",     proto: "stk500v1", baud: 57600,  reset: "dtr",   page: 128, flash: 30720,  eeprom: 1024, sig: ["1e950f"], led: ["b", 5] },
+  m168:     { name: "Nano / Pro Mini (ATmega168)",          proto: "stk500v1", baud: 19200,  reset: "dtr",   page: 128, flash: 14336,  eeprom: 512,  sig: ["1e9406", "1e940b"], led: ["b", 5] },
+  mega:     { name: "Arduino Mega 2560",                    proto: "stk500v2", baud: 115200, reset: "dtr",   page: 256, flash: 253952, eeprom: 4096, sig: ["1e9801"], led: ["b", 7] },
+  leonardo: { name: "Leonardo / Micro / Pro Micro (32U4)",  proto: "avr109",   baud: 57600,  reset: "touch", page: 128, flash: 28672,  eeprom: 1024, sig: ["1e9587"], led: ["c", 7] },
+  custom:   { name: "Custom (use advanced settings)" },
+};
+const AVR_SIGS = { "1e950f": "ATmega328P", "1e9514": "ATmega328", "1e9516": "ATmega328PB", "1e9406": "ATmega168", "1e940b": "ATmega168P", "1e9801": "ATmega2560", "1e9703": "ATmega1280", "1e9587": "ATmega32U4", "1e930a": "ATmega88", "1e930f": "ATmega88P" };
+{
+  const sel = $("#avrBoard");
+  for (const [k, b] of Object.entries(AVR_BOARDS)) sel.add(new Option(b.name, k));
+  sel.onchange = () => applyBoard();
+}
+function applyBoard() {
+  const b = AVR_BOARDS[$("#avrBoard").value];
+  if (!b.proto) { $("#avrAdv").open = true; return; }
+  $("#avrProto").value = b.proto; $("#avrBaud").value = String(b.baud); $("#avrResetM").value = b.reset;
+  $("#avrPage").value = b.page; $("#avrFlashSz").value = b.flash; $("#avrEeSz").value = b.eeprom;
+}
+for (const id of ["avrProto", "avrBaud", "avrResetM", "avrPage", "avrFlashSz", "avrEeSz"])
+  $("#" + id).addEventListener("change", () => { $("#avrBoard").value = "custom"; });
+function avrCfg() {
+  const b = AVR_BOARDS[$("#avrBoard").value];
+  const cfg = { proto: $("#avrProto").value, baud: +$("#avrBaud").value, reset: $("#avrResetM").value,
+    page: +$("#avrPage").value, flash: +$("#avrFlashSz").value, eeprom: +$("#avrEeSz").value, sig: b.sig, led: b.led };
+  if (!(cfg.page > 0) || !(cfg.flash > 0) || !(cfg.eeprom >= 0)) throw new Error("Check page / flash / EEPROM size in Advanced configuration");
+  return cfg;
+}
+
+/* STK500 v1 – Optiboot (Uno, new Nano) and ATmegaBOOT (old Nano, Pro Mini) */
+class Stk500v1 {
+  constructor(link, cfg) { this.l = link; this.cfg = cfg; }
+  async cmd(bytes, n = 0, timeout = 1000) {
+    await this.l.write([...bytes, 0x20]);
+    if ((await this.l.read(1, timeout))[0] !== 0x14) throw new Error("Bootloader out of sync");
+    const data = n ? await this.l.read(n, timeout) : null;
+    if ((await this.l.read(1, timeout))[0] !== 0x10) throw new Error("Bootloader did not acknowledge");
+    return data;
+  }
+  async connect() {
+    for (let i = 0; i < 12; i++) {
+      this.l.flush();
+      await this.l.write([0x30, 0x20]);
+      try { const r = await this.l.read(2, 250); if (r[0] === 0x14 && r[1] === 0x10) { await sleep(20); this.l.flush(); break; } } catch (e) {}
+      if (i === 11) throw new Error("No answer from bootloader. Check board type & baud (old Nano = 57600), port, and that nothing else uses the port.");
+    }
+    try { const hi = (await this.cmd([0x41, 0x81], 1))[0], lo = (await this.cmd([0x41, 0x82], 1))[0]; this.version = `STK500v1 bootloader v${hi}.${lo}`; }
+    catch (e) { this.version = "STK500v1 bootloader"; }
+  }
+  async signature() { return [...await this.cmd([0x75], 3)]; }
+  async enter() { await this.cmd([0x50]); }
+  async leave() { await this.cmd([0x51]); }
+  async addr(a) { const w = a >> 1; await this.cmd([0x55, w & 0xff, (w >> 8) & 0xff]); }
+  async read(mem, a, len) { await this.addr(a); return this.cmd([0x74, len >> 8, len & 0xff, mem === "F" ? 0x46 : 0x45], len, 2000); }
+  async write(mem, a, data) { await this.addr(a); await this.cmd([0x64, data.length >> 8, data.length & 0xff, mem === "F" ? 0x46 : 0x45, ...data], 0, 4000); }
+}
+/* STK500 v2 – Mega 2560 */
+class Stk500v2 {
+  constructor(link, cfg) { this.l = link; this.cfg = cfg; this.seq = 0; }
+  async msg(body, timeout = 1000) {
+    this.seq = (this.seq + 1) & 0xff;
+    const m = [0x1b, this.seq, body.length >> 8, body.length & 0xff, 0x0e, ...body];
+    m.push(m.reduce((x, v) => x ^ v, 0));
+    await this.l.write(m);
+    const end = Date.now() + timeout;
+    while ((await this.l.read(1, Math.max(1, end - Date.now())))[0] !== 0x1b) {}
+    const h = await this.l.read(4, timeout);
+    if (h[3] !== 0x0e) throw new Error("STK500v2: bad frame");
+    const data = await this.l.read((h[1] << 8) | h[2], timeout), ck = (await this.l.read(1, timeout))[0];
+    let x = 0x1b ^ h[0] ^ h[1] ^ h[2] ^ h[3]; for (const v of data) x ^= v;
+    if (x !== ck) throw new Error("STK500v2: checksum error");
+    if (data[0] !== body[0]) throw new Error("STK500v2: unexpected answer");
+    if (data[1] !== 0) throw new Error(`STK500v2: command ${hex(body[0], 2)} failed (status ${hex(data[1], 2)})`);
+    return data;
+  }
+  async connect() {
+    for (let i = 0; i < 12; i++) {
+      this.l.flush();
+      try { const r = await this.msg([0x01], 300); this.version = "STK500v2 bootloader " + String.fromCharCode(...r.slice(3, 3 + r[2])); return; } catch (e) {}
+    }
+    throw new Error("No answer from Mega bootloader. Check port and board type.");
+  }
+  async signature() { const s = []; for (let i = 0; i < 3; i++) s.push((await this.msg([0x1b, 4, 0x30, 0, i, 0]))[2]); return s; }
+  async enter() { await this.msg([0x10, 200, 100, 25, 32, 0, 0x53, 3, 0xac, 0x53, 0, 0]); }
+  async leave() { await this.msg([0x11, 1, 1]); }
+  async addr(mem, a) {
+    let w = a >>> 1;
+    if (mem === "F" && this.cfg.flash > 65536) w = (w | 0x80000000) >>> 0;
+    await this.msg([0x06, (w >>> 24) & 0xff, (w >>> 16) & 0xff, (w >>> 8) & 0xff, w & 0xff]);
+  }
+  async read(mem, a, len) { await this.addr(mem, a); const r = await this.msg([mem === "F" ? 0x14 : 0x16, len >> 8, len & 0xff, mem === "F" ? 0x20 : 0xa0], 3000); return r.slice(2, 2 + len); }
+  async write(mem, a, d) {
+    await this.addr(mem, a);
+    const f = mem === "F";
+    await this.msg([f ? 0x13 : 0x15, d.length >> 8, d.length & 0xff, 0xc1, 10, f ? 0x40 : 0xc1, f ? 0x4c : 0xc2, f ? 0x20 : 0xa0, 0, 0, ...d], 5000);
+  }
+}
+/* AVR109 – Caterina (Leonardo, Micro, Pro Micro) */
+class Avr109 {
+  constructor(link, cfg) { this.l = link; this.cfg = cfg; }
+  async cr(timeout = 1000) { if ((await this.l.read(1, timeout))[0] !== 0x0d) throw new Error("Bootloader did not acknowledge"); }
+  async connect() {
+    for (let i = 0; i < 10; i++) {
+      this.l.flush();
+      await this.l.write([0x53]);
+      try { const id = String.fromCharCode(...await this.l.read(7, 400)); this.version = "AVR109 bootloader " + id; return; } catch (e) {}
+    }
+    throw new Error("No answer from 32U4 bootloader. Double-tap RESET and try again with reset method “None”.");
+  }
+  async signature() { await this.l.write([0x73]); const r = await this.l.read(3); return [r[2], r[1], r[0]]; }
+  async enter() { await this.l.write([0x50]); await this.cr(); }
+  async leave() { await this.l.write([0x4c]); await this.cr(); await this.l.write([0x45]); await this.cr(); }
+  async eraseChip() { await this.l.write([0x65]); await this.cr(15000); }
+  async addr(mem, a) { const w = mem === "F" ? a >> 1 : a; await this.l.write([0x41, (w >> 8) & 0xff, w & 0xff]); await this.cr(); }
+  async read(mem, a, len) { await this.addr(mem, a); await this.l.write([0x67, len >> 8, len & 0xff, mem.charCodeAt(0)]); return this.l.read(len, 3000); }
+  async write(mem, a, d) { await this.addr(mem, a); await this.l.write([0x42, d.length >> 8, d.length & 0xff, mem.charCodeAt(0), ...d]); await this.cr(5000); }
+}
+
+async function touch1200(port) {
+  log("1200-baud touch → board restarts into its bootloader…");
+  await port.open({ baudRate: 1200 });
+  try { await port.setSignals({ dataTerminalReady: false }); await sleep(100); } finally { await port.close(); }
+  await sleep(300);
+}
+function renderAvrInfo(info) {
+  const dl = $("#avrInfo"); dl.textContent = "";
+  for (const [k, v] of Object.entries(info)) {
+    const dt = document.createElement("dt"); dt.textContent = k;
+    const dd = document.createElement("dd"); dd.textContent = v; dl.append(dt, dd);
+  }
+}
+/* Open port, reset into bootloader, sync, enter programming mode, run fn, leave. */
+async function avrSession(fn) {
+  const cfg = avrCfg();
+  await requirePort(); await release();
+  let port = state.port;
+  if (cfg.reset === "touch") {
+    await touch1200(port);
+    port = await askForPort("The board is now in bootloader mode for ~8 s. Click and choose its port (it may show a NEW COM number / “bootloader”).");
+  } else if (cfg.reset === "none") log("Reset method “None”: press RESET on the board now…", "warn");
+  const link = new Link(port);
+  await link.open(cfg.baud);
+  state.owner = { name: "avr", close: () => link.close() };
+  try {
+    if (cfg.reset === "dtr") {
+      await link.signals({ dataTerminalReady: false, requestToSend: false }); await sleep(250);
+      await link.signals({ dataTerminalReady: true, requestToSend: true }); await sleep(50);
+      link.flush();
+    }
+    const P = cfg.proto === "stk500v1" ? Stk500v1 : cfg.proto === "stk500v2" ? Stk500v2 : Avr109;
+    const prog = new P(link, cfg);
+    await prog.connect();
+    const sig = (await prog.signature()).map(v => v.toString(16).padStart(2, "0")).join("");
+    const mcu = AVR_SIGS[sig] || "unknown MCU";
+    log(`${prog.version} · signature ${sig} (${mcu})`);
+    renderAvrInfo({ Bootloader: prog.version, Signature: `0x${sig.toUpperCase()}`, MCU: mcu, Program: `${fmtSize(cfg.flash)} · page ${cfg.page} B`, EEPROM: fmtSize(cfg.eeprom), Status: "Responding ✔" });
+    if (cfg.sig && !cfg.sig.includes(sig)) log(`⚠ Signature does not match the selected board (expected ${cfg.sig.join(" / ")}).`, "warn");
+    await prog.enter();
+    const res = await fn(prog, cfg);
+    try { await prog.leave(); } catch (e) { log("Note: leave-programming-mode had no answer (" + e.message + ")", "dim"); }
+    return res;
+  } finally {
+    state.owner = null;
+    await link.close();
+  }
+}
+async function avrWriteMem(prog, mem, base, data, chunk, label) {
+  for (let o = 0; o < data.length; o += chunk) {
+    await prog.write(mem, base + o, data.subarray(o, o + chunk));
+    setProgress((o + chunk) / data.length, label);
+  }
+}
+async function avrReadMem(prog, mem, base, len, chunk, label) {
+  const out = new Uint8Array(len);
+  for (let o = 0; o < len; o += chunk) {
+    const n = Math.min(chunk, len - o);
+    out.set(await prog.read(mem, base + o, n), o);
+    setProgress((o + n) / len, label);
+  }
+  return out;
+}
+async function avrVerify(prog, mem, base, data, chunk) {
+  const back = await avrReadMem(prog, mem, base, data.length, chunk, "Verifying");
+  for (let i = 0; i < data.length; i++)
+    if (back[i] !== data[i]) return { ok: false, at: base + i, want: data[i], got: back[i] };
+  return { ok: true };
+}
+const padTo = (d, n) => { const len = Math.ceil(d.length / n) * n; if (len === d.length) return d; const o = new Uint8Array(len).fill(0xff); o.set(d); return o; };
+/* write flash image at offset; erase-chip first on AVR109 */
+async function avrProgram(img, base, label, eraseFirst) {
+  const cfg = avrCfg();
+  if (base % cfg.page) throw new Error(`Start must be a multiple of the page size (${cfg.page})`);
+  if (base + img.length > cfg.flash) throw new Error(`Data ends at ${hex(base + img.length)} but program space is ${fmtSize(cfg.flash)} — it would overwrite the bootloader.`);
+  const data = padTo(img, cfg.page);
+  await avrSession(async prog => {
+    if (eraseFirst && prog.eraseChip) { log("Chip erase…"); await prog.eraseChip(); }
+    log(`${label}: ${fmtSize(data.length)} at ${hex(base)}…`);
+    await avrWriteMem(prog, "F", base, data, cfg.page, "Writing");
+    if ($("#avrVerify").checked) {
+      const v = await avrVerify(prog, "F", base, data, cfg.page);
+      if (!v.ok) throw new Error(`Verify failed at ${hex(v.at)}: expected ${hex(v.want, 2)}, read ${hex(v.got, 2)}`);
+      log("✔ Verified.", "ok");
+    }
+    log(`✔ ${label} complete.`, "ok");
+  });
+}
+
+let avrFlashFile = null, avrEeFile = null;
+$("#avrPickFlash").onclick = () => $("#avrFlashFile").click();
+$("#avrPickEe").onclick = () => $("#avrEeFile").click();
+$("#avrFlashFile").onchange = e => { avrFlashFile = e.target.files[0] || null; $("#avrFlashName").textContent = avrFlashFile ? `${avrFlashFile.name} · ${fmtSize(avrFlashFile.size)}` : "No file"; };
+$("#avrEeFile").onchange = e => { avrEeFile = e.target.files[0] || null; $("#avrEeName").textContent = avrEeFile ? `${avrEeFile.name} · ${fmtSize(avrEeFile.size)}` : "No file"; };
+
+onClick("avrTest", "Test Arduino", () => avrSession(async () => log("✔ Board and bootloader are responding.", "ok")));
+onClick("avrReset", "Reset Arduino", async () => {
+  await requirePort(); await release();
+  const l = new Link(state.port, false); await l.open(9600);
+  try { await l.signals({ dataTerminalReady: false }); await sleep(120); await l.signals({ dataTerminalReady: true }); await sleep(50); }
+  finally { await l.close(); }
+  log("Reset pulse sent (DTR).", "ok");
+});
+onClick("avrUpload", "Upload program", async () => {
+  if (!avrFlashFile) throw new Error("Choose a .hex or .bin file first");
+  const img = await loadFlatImage(avrFlashFile);
+  log(`${avrFlashFile.name}: ${fmtSize(img.length)} program image`);
+  await avrProgram(img, 0, "Upload", true);
+});
+async function avrWriteEeprom(data, label) {
+  const cfg = avrCfg();
+  if (!cfg.eeprom) throw new Error("This board has no EEPROM configured");
+  if (data.length > cfg.eeprom) throw new Error(`EEPROM data is ${data.length} bytes but EEPROM is ${cfg.eeprom} bytes`);
+  await avrSession(async prog => {
+    await avrWriteMem(prog, "E", 0, data, 128, "Writing EEPROM");
+    const v = await avrVerify(prog, "E", 0, data, 128);
+    if (!v.ok) throw new Error(`EEPROM verify failed at ${hex(v.at)} (expected ${hex(v.want, 2)}, read ${hex(v.got, 2)}). This bootloader probably can’t write EEPROM — use “Clear EEPROM (helper program)” or an ISP programmer.`);
+    log(`✔ ${label} written and verified.`, "ok");
+  });
+}
+onClick("avrUploadEe", "Upload EEPROM", async () => {
+  if (!avrEeFile) throw new Error("Choose an .eep / .hex / .bin file first");
+  await avrWriteEeprom(await loadFlatImage(avrEeFile), "EEPROM data");
+});
+onClick("avrErase", "Erase program", async () => {
+  const cfg = avrCfg();
+  if (!confirm("Erase the program (sketch) on the board? The bootloader stays.")) throw new Error("Cancelled");
+  if (cfg.proto === "avr109") {
+    await avrSession(async prog => { await prog.eraseChip(); log("✔ Program area erased.", "ok"); });
+  } else await avrProgram(new Uint8Array(cfg.flash).fill(0xff), 0, "Erase", false);
+});
+onClick("avrEraseRegion", "Erase region", async () => {
+  const cfg = avrCfg(), a = parseNum($("#avrErAddr").value), n = parseNum($("#avrErSize").value);
+  if (!Number.isFinite(a) || !Number.isFinite(n) || n <= 0) throw new Error("Invalid start or size");
+  if (a % cfg.page || n % cfg.page) throw new Error(`Start and size must be multiples of the page size (${cfg.page} = ${hex(cfg.page)})`);
+  if (cfg.proto === "avr109") log("Note: on 32U4 the region is overwritten with 0xFF page by page.", "dim");
+  await avrProgram(new Uint8Array(n).fill(0xff), a, "Erase region", false);
+});
+onClick("avrEeClear", "Clear EEPROM", async () => {
+  const cfg = avrCfg();
+  if (!confirm(`Set all ${cfg.eeprom} EEPROM bytes to 0xFF?`)) throw new Error("Cancelled");
+  await avrWriteEeprom(new Uint8Array(cfg.eeprom).fill(0xff), "EEPROM clear");
+});
+
+/* Tiny AVR program (hand-assembled) that writes 0xFF to every EEPROM byte, then lights the LED.
+   Works on ATmega168/328P/2560/32U4 (same EEPROM I/O registers). */
+function eepromClearProgram(eepromSize, led) {
+  const w = [
+    0x95a8,                         // wdr
+    0xb704, 0x7f07, 0xbf04,         // in r16,MCUSR ; andi r16,~WDRF ; out MCUSR,r16
+    0xe108, 0xe010,                 // ldi r16,0x18 ; ldi r17,0
+    0x9300, 0x0060, 0x9310, 0x0060, // sts WDTCSR,r16 ; sts WDTCSR,r17   (watchdog off)
+    0xe0a0, 0xe0b0,                 // ldi r26,0 ; ldi r27,0            (X = address)
+    0x99f9, 0xcffe,                 // loop: sbic EECR,EEPE ; rjmp loop
+    0xbdb2, 0xbda1,                 // out EEARH,r27 ; out EEARL,r26
+    0xef0f, 0xbd00,                 // ldi r16,0xFF ; out EEDR,r16
+    0x9afa, 0x9af9,                 // sbi EECR,EEMPE ; sbi EECR,EEPE
+    0x9611,                         // adiw X,1
+  ];
+  const K = (eepromSize >> 8) & 0xff;
+  w.push(0x30b0 | ((K & 0xf0) << 4) | (K & 0x0f)); // cpi r27,size>>8
+  w.push(0xf7a9);                                   // brne loop
+  if (led) {
+    const [ddr, port] = led[0] === "b" ? [0x04, 0x05] : [0x07, 0x08];
+    w.push(0x9a00 | (ddr << 3) | led[1], 0x9a00 | (port << 3) | led[1]); // sbi DDRx,n ; sbi PORTx,n
+  }
+  w.push(0xcfff);                                   // rjmp .
+  const b = new Uint8Array(w.length * 2);
+  w.forEach((v, i) => { b[i * 2] = v & 0xff; b[i * 2 + 1] = v >> 8; });
+  return b;
+}
+onClick("avrEeHelper", "Clear EEPROM (helper)", async () => {
+  const cfg = avrCfg();
+  if (cfg.eeprom % 256) throw new Error("Helper needs an EEPROM size that is a multiple of 256");
+  if (!confirm("This replaces your sketch with a small EEPROM-clear program. Upload your sketch again afterwards. Continue?")) throw new Error("Cancelled");
+  await avrProgram(eepromClearProgram(cfg.eeprom, cfg.led), 0, "EEPROM-clear helper", true);
+  log(`Helper running: clearing ${cfg.eeprom} bytes takes ~${Math.ceil(cfg.eeprom * 3.4 / 1000)} s. The on-board LED turns ON when done. Then upload your sketch again.`, "ok");
+  if (cfg.proto === "avr109") log("32U4 boards: the helper has no USB code, so double-tap RESET before the next upload and use reset method “None”.", "warn");
+});
+async function avrBackup(mem, fmt) {
+  const cfg = avrCfg();
+  const len = mem === "F" ? cfg.flash : cfg.eeprom;
+  const data = await avrSession(prog => avrReadMem(prog, mem, 0, len, mem === "F" ? Math.min(256, cfg.page * 2) : 128, "Reading"));
+  const base = `${$("#avrBoard").value}_${mem === "F" ? "flash" : "eeprom"}_${stamp()}`;
+  if (fmt === "hex") download(base + (mem === "F" ? ".hex" : ".eep"), toIntelHex(data, mem === "F"), "text/plain");
+  else download(base + ".bin", data);
+  log(`✔ Read ${fmtSize(len)} — saved to Downloads.`, "ok");
+}
+onClick("avrBkHex", "Backup program", () => avrBackup("F", "hex"));
+onClick("avrBkBin", "Backup program", () => avrBackup("F", "bin"));
+onClick("avrBkEe", "Backup EEPROM", () => avrBackup("E", "hex"));
+onClick("avrBkEeBin", "Backup EEPROM", () => avrBackup("E", "bin"));
+
+/* ============================ Serial monitor ============================ */
+let mon = null, monPending = "", monAtLineStart = true, monDec = new TextDecoder();
+const monOut = $("#monOut");
+function monFlush() {
+  if (!monPending) return;
+  monOut.append(monPending); monPending = "";
+  if (monOut.textContent.length > 400000) monOut.textContent = monOut.textContent.slice(-300000);
+  if ($("#monAuto").checked) monOut.scrollTop = monOut.scrollHeight;
+}
+let monRaf = 0;
+function monWrite(bytes) {
+  let s;
+  if ($("#monHex").checked) s = [...bytes].map(v => v.toString(16).padStart(2, "0")).join(" ") + " ";
+  else s = monDec.decode(bytes, { stream: true });
+  if ($("#monTs").checked) {
+    let out = "";
+    for (const ch of s) {
+      if (monAtLineStart && ch !== "\n") { out += `[${new Date().toTimeString().slice(0, 8)}.${String(Date.now() % 1000).padStart(3, "0")}] `; monAtLineStart = false; }
+      out += ch;
+      if (ch === "\n") monAtLineStart = true;
+    }
+    s = out;
+  }
+  monPending += s;
+  if (!monRaf) monRaf = requestAnimationFrame(() => { monRaf = 0; monFlush(); });
+}
+function updMon() { $("#monConnect").disabled = !!mon; $("#monDisconnect").disabled = !mon; }
+async function monStart() {
+  await requirePort(); await release();
+  const baud = +$("#monBaud").value;
+  const link = new Link(state.port, false);
+  await link.open(baud);
+  monDec = new TextDecoder(); monAtLineStart = true;
+  link.onData = monWrite;
+  link.onClose = () => { if (mon === link) { mon = null; state.owner = null; updMon(); log("Monitor: port lost.", "warn"); } };
+  mon = link;
+  state.owner = { name: "mon", close: async () => { mon = null; updMon(); await link.close(); } };
+  updMon();
+  log(`Monitor open at ${baud} baud.`, "ok");
+}
+onClick("monConnect", "Open monitor", monStart);
+$("#monDisconnect").onclick = async () => { if (state.owner?.name === "mon") await release(); log("Monitor closed."); };
+$("#monClear").onclick = () => { monOut.textContent = ""; };
+$("#monSave").onclick = () => download(`serial-${stamp()}.txt`, monOut.textContent, "text/plain");
+$("#monBaud").onchange = async () => { if (mon) { await release(); await monStart(); } };
+async function monSend() {
+  if (!mon) { log("Monitor is not connected.", "warn"); return; }
+  const inp = $("#monInput"), eol = $("#monEol").value.replace("\\n", "\n").replace("\\r", "\r").replace("\\n", "\n");
+  await mon.write(new TextEncoder().encode(inp.value + eol));
+  inp.value = "";
+}
+$("#monSend").onclick = monSend;
+$("#monInput").addEventListener("keydown", e => { if (e.key === "Enter") monSend(); });
+async function monSignals(seq) {
+  if (!mon) { log("Connect the monitor first.", "warn"); return; }
+  for (const s of seq) { if (typeof s === "number") await sleep(s); else await mon.signals(s); }
+}
+$("#monRstEsp").onclick = () => monSignals([{ dataTerminalReady: false, requestToSend: true }, 120, { requestToSend: false }]);
+$("#monBootEsp").onclick = () => monSignals([{ dataTerminalReady: false, requestToSend: true }, 100, { dataTerminalReady: true, requestToSend: false }, 50, { dataTerminalReady: false }]);
+$("#monRstAvr").onclick = () => monSignals([{ dataTerminalReady: false }, 120, { dataTerminalReady: true }]);
+
+/* ============================ tabs, settings, init ============================ */
+function switchTab(t) {
+  $$(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === t));
+  $$(".tab").forEach(s => s.classList.toggle("on", s.id === "tab-" + t));
+  try { localStorage.setItem("wf:tab", t); } catch (e) {}
+}
+$$(".tabs button").forEach(b => b.onclick = () => switchTab(b.dataset.tab));
+for (const el of $$("[data-persist]")) {
+  const key = "wf:" + el.id;
+  try {
+    const v = localStorage.getItem(key);
+    if (v !== null) { if (el.type === "checkbox") el.checked = v === "1"; else el.value = v; }
+  } catch (e) {}
+  el.addEventListener("change", () => { try { localStorage.setItem(key, el.type === "checkbox" ? (el.checked ? "1" : "0") : el.value); } catch (e) {} });
+}
+if (!AVR_BOARDS[$("#avrBoard").value]) $("#avrBoard").value = "uno";
+applyBoard();
+try { const t = localStorage.getItem("wf:tab"); if (t) switchTab(t); } catch (e) {}
+renderRows(); updMon();
+
+if (!("serial" in navigator)) {
+  $("#unsupported").hidden = false;
+  $$(".act").forEach(b => b.disabled = true);
+  log("Web Serial not available in this browser.", "err");
+} else {
+  navigator.serial.getPorts().then(ps => { if (ps.length === 1 && !state.port) { state.port = ps[0]; showPort(); log("Using previously allowed port: " + portName(ps[0])); } });
+  navigator.serial.addEventListener("disconnect", e => {
+    if (e.target === state.port) { log("Port unplugged.", "warn"); state.owner = null; esp = null; mon = null; renderEspInfo(null); updMon(); state.port = null; showPort(); }
+  });
+  log("Ready. 1) Select port  2) Pick the tab for your board  3) Flash. Keep this page open while flashing.", "dim");
+}
+</script>
+</body>
+</html>
