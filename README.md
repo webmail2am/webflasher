@@ -6,7 +6,7 @@ One HTML file — no installation. Works in **Chrome** or **Edge** (desktop) usi
 ## Use it
 
 - Download [`WebFlasher.html`](WebFlasher.html) and open it in Chrome/Edge, or
-- open the hosted version (GitHub Pages) at `https://<user>.github.io/<repo>/WebFlasher.html`.
+- open the hosted version: **https://webmail2am.github.io/webflasher/WebFlasher.html**
 
 Click **Select port**, pick the tab for your board, and go.
 
